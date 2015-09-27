@@ -30,15 +30,20 @@ def get_cli():
 def get_files(run, eos_path):
     result = []
     lines = ""
+    run_path = os.path.join(eos_path, "%08d" % run)
     try:
         FNULL = open(os.devnull, 'w')
-        lines = subprocess.check_output([EOS_CMD, 'ls', os.path.join(eos_path, "%08d" % run)], stderr=FNULL)
+        lines = subprocess.check_output([EOS_CMD, 'ls', run_path], stderr=FNULL)
     except subprocess.CalledProcessError:
         pass
 
     for line in lines.split('\n'):
         if line:
-            result.append(os.path.join(eos_path, line))
+            raw_path = os.path.join(run_path, line)
+            files = subprocess.check_output([EOS_CMD, 'ls', raw_path])
+            for f in files.split('\n'):
+                if f:
+                    result.append(os.path.join(raw_path, f))
     return result
 
 
