@@ -1,0 +1,2 @@
+get_files -jo COOLIdDump.txt
+python {{BASE_DIR}}/app/scripts/RunPlotCalibrationGains.py || (touch error; exit 1)
