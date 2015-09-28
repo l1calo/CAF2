@@ -9,5 +9,5 @@ source $AtlasSetup/scripts/asetup.sh {{ASETUP}}
 cat jobo.py
 ls -lts
 athena.py jobo.py
+
 {{POSTEXEC}}
-rm pid

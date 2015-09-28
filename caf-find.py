@@ -17,6 +17,7 @@ console.setFormatter(formatter)
 logger.addHandler(console)
 # =============================================================================
 
+
 def get_cli():
     parser = argparse.ArgumentParser(description='Find runs by the certain creteria')
     parser.add_argument('-l', '--log',
@@ -31,12 +32,14 @@ def get_cli():
     return parser.parse_args()
 # =============================================================================
 
+
 def payload_to_dict(payload):
     result = {}
     for p in payload:
         result[p] = payload[p]
     return result
 # =============================================================================
+
 
 class Selector(object):
     coolpath = '/TDAQ/RunCtrl'
@@ -212,25 +215,30 @@ class Selector(object):
         return runlist
 
 
-def main():
-    # Get command line parameters
-    cli = get_cli()
-    # Set logging level
-    logger.setLevel(getattr(logging, cli.log))
+def get_runs(run, loglevel, runtype, partition, recenabled, cleanstop, nrecords):
+    logger.setLevel(getattr(logging, loglevel))
     # =========================================================================
     # Setup runs selector
     # =========================================================================
     # TODO(sasha): convert to the function with one call to runs_by_range
     selector = Selector("COOLONL_TDAQ/CONDBR2", "COOLONL_TRIGGER/CONDBR2")
     selector.set_selection(
-        RunType=cli.runtype,
-        PartitionName=cli.partition,
-        RecordingEnabled=cli.recenabled,
-        CleanStop=cli.cleanstop,
+        RunType=runtype,
+        PartitionName=partition,
+        RecordingEnabled=recenabled,
+        CleanStop=cleanstop,
         RecordedEvents__gt=0
     )
     # =========================================================================
-    runs = selector.runs_by_range(run1=cli.run)
+    return selector.runs_by_range(run1=run)
+
+
+def main():
+    # Get command line parameters
+    cli = get_cli()
+    runs = get_runs(run=cli.run, loglevel=cli.log, runtype=cli.runtype, partition=cli.partition,
+                    recenabled=cli.recenabled, cleanstop=cli.cleanstop, nrecords=0
+                    )
     # =========================================================================
     print(json.dumps(runs, indent=2))
 

@@ -22,12 +22,12 @@ def get_cli():
                         choices=['ERROR', 'WARNING', 'INFO', 'DEBUG', 'VERBOSE'],
                         help="Logging level", default='ERROR')
     parser.add_argument('-p', '--paths', nargs='+', help="EOS paths", default=DEAFULT_SOURCE)
-    parser.add_argument('-r', '--runs', nargs='+', type=int, help="Run number(s)", required=True)
+    parser.add_argument('-r', '--run',  type=int, help="Run number", required=True)
 
     return parser.parse_args()
 
 
-def get_files(run, eos_path):
+def get_files_by_path(run, eos_path):
     result = []
     lines = ""
     run_path = os.path.join(eos_path, "%08d" % run)
@@ -47,13 +47,16 @@ def get_files(run, eos_path):
     return result
 
 
+def get_files(run, paths):
+    result = []
+    for path in paths:
+        result += get_files_by_path(run, path)
+    return result
+
+
 def main():
     cli = get_cli()
-    result = []
-    for run in cli.runs:
-        for path in cli.paths:
-            result += get_files(run, path)
-
+    result = get_files(cli.run, cli.paths)
     print(json.dumps(result, indent=2))
 
 if __name__ == '__main__':
