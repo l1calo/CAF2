@@ -3,7 +3,14 @@
 import logging
 import argparse
 import json
-from PyCool import cool
+import sys
+
+try:
+    from PyCool import cool
+except ImportError:
+    sys.stderr.write("Please run asetup before running the tool (any configuration)\n")
+    sys.exit(-1)
+
 from CoolConvUtilities import AtlCoolLib
 
 # =============================================================================
@@ -24,10 +31,12 @@ def get_cli():
                         choices=['ERROR', 'WARNING', 'INFO', 'DEBUG', 'VERBOSE'],
                         help="Logging level", default='ERROR')
     parser.add_argument('--runtype', help="Run type", default='cismono')
-    parser.add_argument('--partition', help="Paritition name", default='TileL1CaloCombined')
+    parser.add_argument('-p', '--partitions', help="Paritition names", nargs='+',
+                        default=['TileL1CaloCombined'])
     parser.add_argument('--recenabled', type=bool, help="Recording enabled?", default=True)
     parser.add_argument('--cleanstop', type=bool, help="Clean stop", default=True)
-    parser.add_argument("run", type=int, help="Run number to start from", default=266000)
+    parser.add_argument('-r', "--run", type=int, help="Run number to start from",
+                        default=266000, required=True)
 
     return parser.parse_args()
 # =============================================================================
@@ -215,7 +224,7 @@ class Selector(object):
         return runlist
 
 
-def get_runs(run, loglevel, runtype, partition, recenabled, cleanstop, nrecords):
+def get_runs(run, loglevel, runtype, partitions, recenabled, cleanstop, nrecords):
     logger.setLevel(getattr(logging, loglevel))
     # =========================================================================
     # Setup runs selector
@@ -224,19 +233,23 @@ def get_runs(run, loglevel, runtype, partition, recenabled, cleanstop, nrecords)
     selector = Selector("COOLONL_TDAQ/CONDBR2", "COOLONL_TRIGGER/CONDBR2")
     selector.set_selection(
         RunType=runtype,
-        PartitionName=partition,
+        PartitionName__in=partitions,
         RecordingEnabled=recenabled,
         CleanStop=cleanstop,
         RecordedEvents__gt=0
     )
     # =========================================================================
-    return selector.runs_by_range(run1=run)
+    runs = selector.runs_by_range(run1=run)
+    result = []
+    for key in sorted(runs.iterkeys()):
+        result.append(runs[key])
+    return result
 
 
 def main():
     # Get command line parameters
     cli = get_cli()
-    runs = get_runs(run=cli.run, loglevel=cli.log, runtype=cli.runtype, partition=cli.partition,
+    runs = get_runs(run=cli.run, loglevel=cli.log, runtype=cli.runtype, partitions=cli.partitions,
                     recenabled=cli.recenabled, cleanstop=cli.cleanstop, nrecords=0
                     )
     # =========================================================================
