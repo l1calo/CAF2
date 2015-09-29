@@ -31,7 +31,7 @@ def prepare(jo, files, asetup, postexec, output, run):
     if not os.path.exists(output):
         os.makedirs(output)
     # -------------------------------------------------------------------------
-    files = ["'root://eos/%s'" % f for f in files]
+    files = ["'root://eosatlas/%s'" % f for f in files]
     # -------------------------------------------------------------------------
     base_dir = os.path.dirname(os.path.abspath(__file__))
     tmpl_dir = os.path.join(base_dir, 'tmpl')
@@ -40,7 +40,7 @@ def prepare(jo, files, asetup, postexec, output, run):
     if postexec:
         with open(os.path.join(tmpl_dir, postexec), 'r') as f:
             postexec_content = f.read()
-            postexec_content = postexec.replace('{{BASEDIR}}', base_dir)
+            postexec_content = postexec_content.replace('{{BASEDIR}}', base_dir)
     # -------------------------------------------------------------------------
     templates = [jo, os.path.join(tmpl_dir, 'launcher.sh')]
     for i, tmpl in enumerate(templates):
@@ -49,6 +49,7 @@ def prepare(jo, files, asetup, postexec, output, run):
             content = f.read()
             # -----------------------------------------------------------------
             content = content.replace('{{BASEDIR}}', base_dir)
+            content = content.replace('{{OUTPUT}}', os.path.abspath(output))
             content = content.replace('{{RUN}}', str(run))
             content = content.replace('{{FILES}}', ', '.join(files))
             content = content.replace('{{ASETUP}}', asetup)
