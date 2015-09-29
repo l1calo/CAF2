@@ -6,8 +6,8 @@ ls -lrt
 export AtlasSetup=/afs/cern.ch/atlas/software/releases/20.1.0/AtlasSetup
 source $AtlasSetup/scripts/asetup.sh {{ASETUP}}
 
-cat jobo.py
+cat {{OUTPUT}}/jobo.py
 ls -lts
-athena.py jobo.py
+athena.py {{OUTPUT}}/jobo.py
 
 {{POSTEXEC}}
