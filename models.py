@@ -1,10 +1,19 @@
 import os
 from peewee import *
+from fields import *
 
 db = SqliteDatabase('db/caf.db')
 
 
-class Run(Model):
+class BaseModel(Model):
+    class Meta:
+        database = db
+
+
+class Listener(BaseModel):
+    Name = CharField(max_length=255)
+
+class Run(BaseModel):
     RunNumber = IntegerField()
     EORTime = IntegerField()
     SORTime = IntegerField()
@@ -13,20 +22,22 @@ class Run(Model):
     RunType = CharField(max_length=255)
     GainStrategy = CharField(max_length=255)
     PartitionName = CharField(max_length=255)
-    Listener = CharField(max_length=255)
 
-    class Meta:
-        database = db
+    Listeners = ManyToManyField(Listener, related_name='Runs')
 
 
-class Job(Model):
+# class RunListener(Model):
+#     Run = ForeignKeyField(Run, related_name='Listeners')
+#     Listener = ForeignKeyField(Listener, related_name='Runs')
+#
+#     class Meta:
+#         database = db
+
+class Job(BaseModel):
     Run = ForeignKeyField(Run, related_name='Jobs')
     Analysis = CharField(max_length=255)
     Start = DateTimeField()
     Status = CharField(max_length=255)
-
-    class Meta:
-        database = db
 
 
 def connect(path=None, recreate=False):
@@ -36,7 +47,7 @@ def connect(path=None, recreate=False):
             os.path.dirname(os.path.abspath(__file__)),
             'db'
         )
-        if not base_dir:
+        if not os.path.exists(base_dir):
             os.makedirs(base_dir)
         db_path = os.path.join(base_dir, 'caf.db')
 
@@ -46,4 +57,4 @@ def connect(path=None, recreate=False):
 
     db.database = db_path
     db.connect()
-    db.create_tables([Run, Job], not recreate)
+    db.create_tables([Run, Job, Listener, Run.Listeners.get_through_model()], not recreate)

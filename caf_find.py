@@ -224,7 +224,7 @@ class Selector(object):
         return runlist
 
 
-def get_runs(run, loglevel, runtype, partitions, recenabled, cleanstop, nrecords):
+def get_runs(run, loglevel, runtype, partitions, recenabled, cleanstop, minevents):
     logger.setLevel(getattr(logging, loglevel))
     # =========================================================================
     # Setup runs selector
@@ -236,7 +236,7 @@ def get_runs(run, loglevel, runtype, partitions, recenabled, cleanstop, nrecords
         PartitionName__in=partitions,
         RecordingEnabled=recenabled,
         CleanStop=cleanstop,
-        RecordedEvents__gt=0
+        RecordedEvents__gt=minevents
     )
     # =========================================================================
     runs = selector.runs_by_range(run1=run)
