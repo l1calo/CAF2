@@ -1,4 +1,5 @@
 out
 tests
 db
+docs/build
 .asetup.save

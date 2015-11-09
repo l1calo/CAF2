@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-
+# ======================================================================
 import os
 import argparse
+# ======================================================================
 
 
 def get_cli():
@@ -14,19 +15,20 @@ def get_cli():
     parser.add_argument('-a', '--asetup', help="asetup string", default="20.1.7.2")
     parser.add_argument('-p', '--postexec', help="Post exec script",)
     parser.add_argument('-o', '--output', help="Output folder", required=True)
-    parser.add_argument("run", type=int, help="Run number")
 
     return parser.parse_args()
+# ======================================================================
 
 
 def main():
     cli = get_cli()
 
     prepare(jo=cli.input, files=cli.files, asetup=cli.asetup,
-            postexec=cli.postexec, output=cli.output, run=cli.run)
+            postexec=cli.postexec, output=cli.output)
+# ======================================================================
 
 
-def prepare(jo, files, asetup, postexec, output, run):
+def prepare(jo, files, output, asetup=None, postexec=None):
     # -------------------------------------------------------------------------
     if not os.path.exists(output):
         os.makedirs(output)
@@ -50,7 +52,6 @@ def prepare(jo, files, asetup, postexec, output, run):
             # -----------------------------------------------------------------
             content = content.replace('{{BASEDIR}}', base_dir)
             content = content.replace('{{OUTPUT}}', os.path.abspath(output))
-            content = content.replace('{{RUN}}', str(run))
             content = content.replace('{{FILES}}', ', '.join(files))
             content = content.replace('{{ASETUP}}', asetup)
             # -----------------------------------------------------------------
@@ -62,7 +63,8 @@ def prepare(jo, files, asetup, postexec, output, run):
             with open(os.path.join(output, output_name), 'w') as f:
                 f.write(content)
     # -------------------------------------------------------------------------
-
+# ======================================================================
 
 if __name__ == '__main__':
     main()
+# ======================================================================

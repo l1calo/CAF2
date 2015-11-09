@@ -1,5 +1,30 @@
 #!/usr/bin/env python
+"""
+Tool for finding calibration files in EOS
 
+.. code-block:: bash
+
+    usage: caf_files.py [-h] [-l {ERROR,WARNING,INFO,DEBUG,VERBOSE}]
+                        [-p PATHS [PATHS ...]] -r RUN
+
+    Find files in eos by their path
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -l {ERROR,WARNING,INFO,DEBUG,VERBOSE}, --log {ERROR,WARNING,INFO,DEBUG,VERBOSE}
+                            Logging level
+      -p PATHS [PATHS ...], --paths PATHS [PATHS ...]
+                            EOS paths
+      -r RUN, --run RUN     Run number
+
+Default paths for searching raw files:
+    /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPmtScan
+    /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloEnergyScan
+    /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPprDacScanPars
+    /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPprPedestalRunPars
+    /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPprPhos4ScanPars
+
+"""
 import argparse
 import subprocess
 import json
@@ -47,8 +72,10 @@ def get_files_by_path(run, eos_path):
     return result
 
 
-def get_files(run, paths):
+def get_files(run, paths=None):
     result = []
+    paths = paths if paths else DEAFULT_SOURCE
+
     for path in paths:
         result += get_files_by_path(run, path)
     return result

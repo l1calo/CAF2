@@ -22,3 +22,11 @@ SCANS = [
         "enabled": True
     }
 ]
+
+ANALYSIS = [
+    {
+        "name": "TileRampMaker",
+        "file": "RampMaker.py",
+        "postexec": "RunPlotCalibrationGains.sh"
+    }
+]
