@@ -1,11 +1,37 @@
 #!/usr/bin/env python
+"""
+Generate job options for the specified analysis.
+
+
+This tool can be executed as a standalone program or used as a library.
+
+.. code-block:: bash
+
+    usage: caf_prepare.py [-h] -input INPUT -f FILES [FILES ...] [-a ASETUP]
+                          [-p POSTEXEC] -o OUTPUT
+
+    Prepare job options
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -input INPUT, --input INPUT
+                            Job option or recotf template
+      -f FILES [FILES ...], --files FILES [FILES ...]
+                            Files
+      -a ASETUP, --asetup ASETUP
+                            asetup string
+      -p POSTEXEC, --postexec POSTEXEC
+                            Post exec script
+      -o OUTPUT, --output OUTPUT
+                            Output folder
+"""
 # ======================================================================
 import os
 import argparse
 # ======================================================================
 
 
-def get_cli():
+def _get_cli():
     parser = argparse.ArgumentParser(description='Prepare job options')
     # parser.add_argument('-l', '--log',
     #                     choices=['ERROR', 'WARNING', 'INFO', 'DEBUG', 'VERBOSE'],
@@ -20,8 +46,8 @@ def get_cli():
 # ======================================================================
 
 
-def main():
-    cli = get_cli()
+def _main():
+    cli = _get_cli()
 
     prepare(jo=cli.input, files=cli.files, asetup=cli.asetup,
             postexec=cli.postexec, output=cli.output)
@@ -29,6 +55,15 @@ def main():
 
 
 def prepare(jo, files, output, asetup=None, postexec=None):
+    """ Generate job options for the spedified analysis.
+
+    Args:
+        jo (string): path to job options
+        files ([string]): raw files for analysis
+        output ([string]): output directory
+        asetup (string): parameters of `asetup` command
+        postexec (string): path to the script that runs after the job options
+    """
     # -------------------------------------------------------------------------
     if not os.path.exists(output):
         os.makedirs(output)
@@ -66,5 +101,5 @@ def prepare(jo, files, output, asetup=None, postexec=None):
 # ======================================================================
 
 if __name__ == '__main__':
-    main()
+    _main()
 # ======================================================================

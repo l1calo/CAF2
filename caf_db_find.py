@@ -1,4 +1,23 @@
 #!/usr/bin/env python
+"""
+Find calibration runs and save them to the database for further processing.
+Search parameters are defined in :mod:`settings` module.
+
+Uses database schema defined in :mod:`model`
+
+.. code-block:: bash
+    usage: caf_db_find.py [-h] [-l {ERROR,WARNING,INFO,DEBUG,VERBOSE}] [-r]
+
+    Find runs by the specified creterias
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -l {ERROR,WARNING,INFO,DEBUG,VERBOSE}, --log {ERROR,WARNING,INFO,DEBUG,VERBOSE}
+                            Logging level
+      -r, --recreate        Recreate database
+
+
+"""
 # ======================================================================
 import json
 import argparse
@@ -13,7 +32,7 @@ import caf_files
 # ======================================================================
 
 
-def get_cli():
+def _get_cli():
     parser = argparse.ArgumentParser(
         description='Find runs by the certain creteria'
     )
@@ -26,7 +45,7 @@ def get_cli():
 # ======================================================================
 
 
-def process_listener(lst, loglevel):
+def _process_listener(lst, loglevel):
     runs = caf_find.get_runs(
         run=lst['initialrun'],
         loglevel=loglevel,
@@ -61,14 +80,14 @@ def process_listener(lst, loglevel):
 # ======================================================================
 
 
-def main():
-    cli = get_cli()
+def _main():
+    cli = _get_cli()
     models.connect(recreate=cli.recreate)
 
     for listener in settings.SCANS:
         if listener.get('enabled', True):
-            process_listener(listener, cli.log)
+            _process_listener(listener, cli.log)
 # ======================================================================
 
 if __name__ == '__main__':
-    main()
+    _main()

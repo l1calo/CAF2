@@ -2,6 +2,8 @@
 """
 Tool for finding calibration files in EOS
 
+This tool can be executed as a standalone program or used as a library.
+
 .. code-block:: bash
 
     usage: caf_files.py [-h] [-l {ERROR,WARNING,INFO,DEBUG,VERBOSE}]
@@ -41,7 +43,7 @@ DEAFULT_SOURCE = [
 EOS_CMD = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select'
 
 
-def get_cli():
+def _get_cli():
     parser = argparse.ArgumentParser(description='Find files in eos by their path')
     parser.add_argument('-l', '--log',
                         choices=['ERROR', 'WARNING', 'INFO', 'DEBUG', 'VERBOSE'],
@@ -53,6 +55,15 @@ def get_cli():
 
 
 def get_files_by_path(run, eos_path):
+    """ Find files by run number and EOS path
+
+    Args:
+        run (int): run number
+        eos_path (string): eos path. e.g. /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPprPhos4ScanPars/
+
+    Returns:
+        [string]: List of files
+    """
     result = []
     lines = ""
     run_path = os.path.join(eos_path, "%08d" % run)
@@ -73,6 +84,20 @@ def get_files_by_path(run, eos_path):
 
 
 def get_files(run, paths=None):
+    """ Find files by run number and list of possible EOS paths
+
+    Args:
+        run (int): run number
+        path (Optional[string]): eos paths, by defaults uses the following paths:
+            /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPmtScan
+            /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloEnergyScan
+            /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPprDacScanPars
+            /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPprPedestalRunPars
+            /eos/atlas/atlastier0/rucio/data15_calib/calibration_L1CaloPprPhos4ScanPars
+
+    Returns:
+        [string]: List of files
+    """
     result = []
     paths = paths if paths else DEAFULT_SOURCE
 
@@ -81,10 +106,10 @@ def get_files(run, paths=None):
     return result
 
 
-def main():
-    cli = get_cli()
+def _main():
+    cli = _get_cli()
     result = get_files(cli.run, cli.paths)
     print(json.dumps(result, indent=2))
 
 if __name__ == '__main__':
-    main()
+    _main()

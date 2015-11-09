@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.napoleon'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -61,7 +62,6 @@ author = 'Alexander Mazurov'
 
 src_dir = os.path.realpath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 sys.path.insert(0, src_dir)
-print(sys.path)
 
 
 # The version info for the project you're documenting, acts as replacement for

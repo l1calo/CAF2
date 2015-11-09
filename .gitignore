@@ -1,5 +1,7 @@
+venv
 out
 tests
 db
 docs/build
 .asetup.save
+*.pyc

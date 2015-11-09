@@ -1,6 +1,30 @@
 #!/usr/bin/env python
 """
-Find calibration runs by the specified conditions
+Find calibration runs by the specified conditions.
+
+This tool can be executed as a standalone program or called as a function  `get_runs(...)`
+
+.. code-block:: bash
+
+    usage: caf_find.py [-h] [-l {ERROR,WARNING,INFO,DEBUG,VERBOSE}]
+                       [--runtype RUNTYPE] [-p PARTITIONS [PARTITIONS ...]]
+                       [--recenabled RECENABLED] [--cleanstop CLEANSTOP] -r RUN
+
+    Find runs by the certain creteria
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -l {ERROR,WARNING,INFO,DEBUG,VERBOSE}, --log {ERROR,WARNING,INFO,DEBUG,VERBOSE}
+                            Logging level
+      --runtype RUNTYPE     Run type
+      -p PARTITIONS [PARTITIONS ...], --partitions PARTITIONS [PARTITIONS ...]
+                            Paritition names
+      --recenabled RECENABLED
+                            Recording enabled?
+      --cleanstop CLEANSTOP
+                            Clean stop
+      -r RUN, --run RUN     Run number to start from
+
 """
 import logging
 import argparse
@@ -27,7 +51,7 @@ logger.addHandler(console)
 # =============================================================================
 
 
-def get_cli():
+def _get_cli():
     parser = argparse.ArgumentParser(description='Find runs by the certain creteria')
     parser.add_argument('-l', '--log',
                         choices=['ERROR', 'WARNING', 'INFO', 'DEBUG', 'VERBOSE'],
@@ -44,7 +68,7 @@ def get_cli():
 # =============================================================================
 
 
-def payload_to_dict(payload):
+def _payload_to_dict(payload):
     result = {}
     for p in payload:
         result[p] = payload[p]
@@ -52,7 +76,7 @@ def payload_to_dict(payload):
 # =============================================================================
 
 
-class Selector(object):
+class _Selector(object):
     coolpath = '/TDAQ/RunCtrl'
     cooltlbpath = '/TRIGGER/LUMI'
     cooll1calopath = '/TRIGGER/L1Calo/V1/Conditions'
@@ -128,7 +152,7 @@ class Selector(object):
         nsor = 0
         # nsor_filtered = 0
 
-        folder_sor = self.cool_tdaq.getFolder(Selector.coolpath + '/SOR')
+        folder_sor = self.cool_tdaq.getFolder(_Selector.coolpath + '/SOR')
 
         itr = folder_sor.browseObjects(
             (run1 << 32),
@@ -141,7 +165,7 @@ class Selector(object):
             payload = itr.currentRef().payload()
             run = payload['RunNumber']
             if self._filter_by_sor(payload):
-                runlist[run] = payload_to_dict(payload)
+                runlist[run] = _payload_to_dict(payload)
 
         itr.close()
         if not runlist:
@@ -152,7 +176,7 @@ class Selector(object):
         # now query EOR and fill in missing info
         neor = 0
         # neor_filtered = 0
-        folder_eor = self.cool_tdaq.getFolder(Selector.coolpath + '/EOR')
+        folder_eor = self.cool_tdaq.getFolder(_Selector.coolpath + '/EOR')
         itr = folder_eor.browseObjects(
             min(runlist.keys()) << 32,
             max(runlist.keys()) << 32,
@@ -162,7 +186,7 @@ class Selector(object):
             payload = itr.currentRef().payload()
             run = payload['RunNumber']
             if run in runlist:
-                runlist[run].update(payload_to_dict(payload))
+                runlist[run].update(_payload_to_dict(payload))
                 neor += 1
 
         # logging.info("EOR has data for %i runs" % neor)
@@ -174,7 +198,7 @@ class Selector(object):
         # nevc_filtered = 0
 
         folder_counters = self.cool_tdaq.getFolder(
-            Selector.coolpath + '/EventCounters')
+            _Selector.coolpath + '/EventCounters')
         itr = folder_counters.browseObjects(
             min(runlist.keys()) << 32,
             max(runlist.keys()) << 32,
@@ -186,7 +210,7 @@ class Selector(object):
             payload = obj.payload()
             run = obj.since() >> 32
             if run in runlist:
-                runlist[run].update(payload_to_dict(payload))
+                runlist[run].update(_payload_to_dict(payload))
         itr.close()
 
         # =====================================================================
@@ -227,12 +251,51 @@ class Selector(object):
 
 
 def get_runs(run, loglevel, runtype, partitions, recenabled, cleanstop, minevents):
+    """ Find calibration runs by the specified conditions
+
+    Args:
+        run (int): Search runs with run number larger then `run`
+        loglevel (string): ERROR,WARNING,INFO,DEBUG,VERBOSE
+        runtype (string): LarCalibL1Calo, cismono,...
+        partitions ([string]): L1CaloCombined, LArgL1CaloCombined,...
+        recenabled (bool): Recording enabled?
+        cleanstop (bool): It was clean stop?
+        minevents (int): Find runs with number of events more then minevents
+
+    Returns:
+        [dict]: List of records with information  about the run:
+
+            .. code-block:: json
+
+                [
+                    
+                    {
+                        "DAQConfiguration": "Schema=360:Data=81",
+                        "TotalTime": 138,
+                        "EORTime": 1445166537000000000,
+                        "SORTime": 1445166398000000000,
+                        "L2Events": 0,
+                        "RunNumber": 282477,
+                        "CleanStop": true,
+                        "EFEvents": 2236,
+                        "DetectorMask": "00000000000000000000280400f00000",
+                        "RecordingEnabled": true,
+                        "GainStrategy": "GainOne",
+                        "L1Events": 2241,
+                        "T0ProjectTag": "data15_calib",
+                        "RunType": "cismono",
+                        "RecordedEvents": 2241,
+                        "PartitionName": "TileL1CaloCombined"
+                    }
+                ]
+
+    """
     logger.setLevel(getattr(logging, loglevel))
     # =========================================================================
     # Setup runs selector
     # =========================================================================
     # TODO(sasha): convert to the function with one call to runs_by_range
-    selector = Selector("COOLONL_TDAQ/CONDBR2", "COOLONL_TRIGGER/CONDBR2")
+    selector = _Selector("COOLONL_TDAQ/CONDBR2", "COOLONL_TRIGGER/CONDBR2")
     selector.set_selection(
         RunType=runtype,
         PartitionName__in=partitions,
@@ -248,14 +311,14 @@ def get_runs(run, loglevel, runtype, partitions, recenabled, cleanstop, minevent
     return result
 
 
-def main():
+def _main():
     # Get command line parameters
-    cli = get_cli()
+    cli = _get_cli()
     runs = get_runs(run=cli.run, loglevel=cli.log, runtype=cli.runtype, partitions=cli.partitions,
-                    recenabled=cli.recenabled, cleanstop=cli.cleanstop, nrecords=0
+                    recenabled=cli.recenabled, cleanstop=cli.cleanstop, minevents=0
                     )
     # =========================================================================
     print(json.dumps(runs, indent=2))
 
 if __name__ == '__main__':
-    main()
+    _main()

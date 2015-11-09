@@ -1,7 +1,10 @@
+""" Database model
+"""
 import os
 from peewee import *
 from fields import *
 
+""" Default database is db/caf.db """
 db = SqliteDatabase('db/caf.db')
 
 
@@ -12,6 +15,7 @@ class BaseModel(Model):
 
 class Listener(BaseModel):
     Name = CharField(max_length=255)
+
 
 class Run(BaseModel):
     RunNumber = IntegerField()
@@ -52,6 +56,12 @@ class Job(BaseModel):
 
 
 def connect(path=None, recreate=False):
+    """ Connect to database
+    Args:
+        path (string): path to the database
+        recreate (bool): recreate database? The old database will be rewritten
+                         if this flag is set
+    """
     db_path = path
     if not path:
         base_dir = os.path.join(
